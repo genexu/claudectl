@@ -19,8 +19,12 @@ func (d PanelListItemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return
 func (d PanelListItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	title := listItem.FilterValue()
 	if index == m.Index() {
-		fmt.Fprint(w, selectedItemStyle.Render("▶ "+title))
+		icon := selectedItemIconStyle.Render(SymbolSelected + " ")
+		content := selectedItemStyle.Render(icon + title)
+		fmt.Fprint(w, content)
 	} else {
-		fmt.Fprint(w, unselectedItemStyle.Render(title))
+		icon := unselectedItemIconStyle.Render(SymbolUnselected + " ")
+		content := unselectedItemStyle.Render(icon + title)
+		fmt.Fprint(w, content)
 	}
 }
