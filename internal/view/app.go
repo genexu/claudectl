@@ -39,6 +39,7 @@ type Model struct {
 
 	activeTab   TabType
 	activePanel PanelType
+	activeList  PanelType
 	width       int
 	height      int
 
@@ -72,10 +73,11 @@ func NewModel(
 		pluginLoader:  pluginLoader,
 		activeTab:     MCPsTab,
 		activePanel:   UserPanel,
-		width:  DefaultWidth,
-		height: DefaultHeight,
-		keys:   DefaultKeyMap(),
-		help:   NewStyledHelp(),
+		activeList:    UserPanel,
+		width:         DefaultWidth,
+		height:        DefaultHeight,
+		keys:          DefaultKeyMap(),
+		help:          NewStyledHelp(),
 	}
 
 	model.loadCapabilities()
@@ -249,17 +251,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		if key.Matches(msg, m.keys.SwitchPanel) {
+		if key.Matches(msg, m.keys.SwitchListPanel) {
 			switch m.activePanel {
 			case UserPanel:
 				m.activePanel = ProjectPanel
+				m.activeList = ProjectPanel
 				m.projectListPanel.SelectFirst()
 			case ProjectPanel:
-				m.activePanel = DetailPanelFocus
-			case DetailPanelFocus:
 				m.activePanel = UserPanel
+				m.activeList = UserPanel
 				m.userListPanel.SelectFirst()
 			}
+
 			m.updateDetailPanel()
 			if m.logger != nil {
 				m.logger.Debug("switched panel focus", "panel", m.activePanel)
@@ -267,25 +270,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		handleTabCycle := func(nextTab TabType, direction string) (tea.Model, tea.Cmd) {
-			m.activeTab = nextTab
-			m.updateListsForCurrentTab()
-			m.selectFirstInActivePanel()
-			if m.logger != nil {
-				m.logger.Debug("cycled tab "+direction, "tab", m.activeTab.String())
-			}
-			return m, nil
-		}
-
-		if key.Matches(msg, m.keys.NextTab) {
-			return handleTabCycle(m.activeTab.NextTab(), "forward")
-		}
-		if key.Matches(msg, m.keys.PrevTab) {
-			return handleTabCycle(m.activeTab.PrevTab(), "backward")
-		}
-
-		if key.Matches(msg, m.keys.Up) || key.Matches(msg, m.keys.Down) ||
-			key.Matches(msg, m.keys.PageUp) || key.Matches(msg, m.keys.PageDown) {
+		if key.Matches(msg, m.keys.Up) || key.Matches(msg, m.keys.Down) {
 			var cmd tea.Cmd
 			switch m.activePanel {
 			case UserPanel:
@@ -298,6 +283,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmd = m.detailPanel.Update(msg)
 			}
 			return m, cmd
+		}
+
+		if key.Matches(msg, m.keys.Left) {
+			if m.activePanel == DetailPanelFocus {
+				m.activePanel = m.activeList
+				m.updateDetailPanel()
+				if m.logger != nil {
+					m.logger.Debug("moved focus from detail panel to list panel", "panel", m.activePanel)
+				}
+			}
+			return m, nil
+		}
+
+		if key.Matches(msg, m.keys.Right) {
+			if m.activePanel != DetailPanelFocus {
+				m.activePanel = DetailPanelFocus
+				if m.logger != nil {
+					m.logger.Debug("moved focus to detail panel")
+				}
+			}
+			return m, nil
 		}
 
 	case tea.WindowSizeMsg:
@@ -325,6 +331,13 @@ func (m Model) View() string {
 	userBorderStyle := unfocusedBorderStyle
 	projectBorderStyle := unfocusedBorderStyle
 	detailBorderStyle := unfocusedBorderStyle
+
+	switch m.activeList {
+	case UserPanel:
+		userBorderStyle = focusedBorderStyle
+	case ProjectPanel:
+		projectBorderStyle = focusedBorderStyle
+	}
 
 	switch m.activePanel {
 	case UserPanel:

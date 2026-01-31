@@ -5,18 +5,18 @@ import "github.com/charmbracelet/bubbles/key"
 type KeyMap struct {
 	Up       key.Binding
 	Down     key.Binding
+	Left     key.Binding
+	Right    key.Binding
 	PageUp   key.Binding
 	PageDown key.Binding
 
-	SwitchPanel key.Binding
+	SwitchListPanel key.Binding
 
-	Tab1    key.Binding
-	Tab2    key.Binding
-	Tab3    key.Binding
-	Tab4    key.Binding
-	Tab5    key.Binding
-	NextTab key.Binding
-	PrevTab key.Binding
+	Tab1 key.Binding
+	Tab2 key.Binding
+	Tab3 key.Binding
+	Tab4 key.Binding
+	Tab5 key.Binding
 
 	Help key.Binding
 	Quit key.Binding
@@ -32,20 +32,18 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("down", "j"),
 			key.WithHelp("↓/j", "down"),
 		),
-		PageUp: key.NewBinding(
-			key.WithKeys("pgup"),
-			key.WithHelp("pgup", "page up"),
+		Left: key.NewBinding(
+			key.WithKeys("left", "h"),
+			key.WithHelp("←/h", "left"),
 		),
-		PageDown: key.NewBinding(
-			key.WithKeys("pgdown"),
-			key.WithHelp("pgdown", "page down"),
+		Right: key.NewBinding(
+			key.WithKeys("right", "l"),
+			key.WithHelp("→/l", "right"),
 		),
-
-		SwitchPanel: key.NewBinding(
+		SwitchListPanel: key.NewBinding(
 			key.WithKeys("tab"),
 			key.WithHelp("tab", "switch panels"),
 		),
-
 		Tab1: key.NewBinding(
 			key.WithKeys("1"),
 			key.WithHelp("", ""),
@@ -66,15 +64,6 @@ func DefaultKeyMap() KeyMap {
 			key.WithKeys("5"),
 			key.WithHelp("", ""),
 		),
-		NextTab: key.NewBinding(
-			key.WithKeys("ctrl+n"),
-			key.WithHelp("ctrl+n", "next tab"),
-		),
-		PrevTab: key.NewBinding(
-			key.WithKeys("ctrl+p"),
-			key.WithHelp("ctrl+p", "previous tab"),
-		),
-
 		Help: key.NewBinding(
 			key.WithKeys("?"),
 			key.WithHelp("?", "help"),
@@ -95,13 +84,9 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 		{
 			k.Up,
 			k.Down,
-			k.PageUp,
-			k.PageDown,
 		},
 		{
-			k.SwitchPanel,
-			k.NextTab,
-			k.PrevTab,
+			k.SwitchListPanel,
 		},
 		{
 			k.Help,
