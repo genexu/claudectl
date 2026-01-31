@@ -42,17 +42,8 @@ func RunTUI(
 		},
 		OnStop: func(ctx context.Context) error {
 			logger.Info("stopping TUI")
-
 			p.Quit()
-
-			select {
-			case <-model.Shutdown():
-				logger.Info("TUI shutdown complete")
-			case <-ctx.Done():
-				logger.Warn("TUI shutdown timeout")
-				return ctx.Err()
-			}
-
+			logger.Info("TUI shutdown signal sent")
 			return nil
 		},
 	})

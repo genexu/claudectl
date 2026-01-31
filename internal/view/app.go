@@ -41,7 +41,6 @@ type Model struct {
 	activePanel PanelType
 	width       int
 	height      int
-	quitting    bool
 
 	help help.Model
 	keys KeyMap
@@ -53,8 +52,7 @@ type Model struct {
 	userCapabilities    []viewmodels.CapabilityViewModel
 	projectCapabilities []viewmodels.CapabilityViewModel
 
-	program    *tea.Program
-	shutdownCh chan struct{}
+	program *tea.Program
 }
 
 func NewModel(
@@ -74,11 +72,10 @@ func NewModel(
 		pluginLoader:  pluginLoader,
 		activeTab:     MCPsTab,
 		activePanel:   UserPanel,
-		width:         DefaultWidth,
-		height:        DefaultHeight,
-		keys:          DefaultKeyMap(),
-		help:          NewStyledHelp(),
-		shutdownCh:    make(chan struct{}),
+		width:  DefaultWidth,
+		height: DefaultHeight,
+		keys:   DefaultKeyMap(),
+		help:   NewStyledHelp(),
 	}
 
 	model.loadCapabilities()
@@ -102,10 +99,6 @@ func NewModel(
 
 func (m *Model) SetProgram(p *tea.Program) {
 	m.program = p
-}
-
-func (m *Model) Shutdown() <-chan struct{} {
-	return m.shutdownCh
 }
 
 func (m *Model) calculatePanelDimensions() panelDimensions {
@@ -233,7 +226,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if key.Matches(msg, m.keys.Quit) {
-			m.quitting = true
 			return m, tea.Quit
 		}
 
@@ -327,15 +319,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if m.quitting {
-		select {
-		case <-m.shutdownCh:
-		default:
-			close(m.shutdownCh)
-		}
-		return "Goodbye!\n"
-	}
-
 	dims := m.calculatePanelDimensions()
 	tabBar := RenderTabs(m.activeTab)
 
